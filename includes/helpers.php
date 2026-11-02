@@ -1,28 +1,38 @@
 <?php
 // Small helpers shared by all pages.
 
+date_default_timezone_set('Asia/Karachi');   // times are shown in Pakistan time
+
 if (!defined('APP_NAME')) {
     define('APP_NAME', 'MiniGit');
 }
 
 /** Escape text for safe output in HTML (prevents XSS). */
-function e($value): string
+function e($value)
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-/** Read a POST field as trimmed text ('' if missing or not a string). */
-function post_str(string $key, bool $trim = true): string
+/** Read a POST field as text ('' if missing or not a string). */
+function post_str($key, $trim = true)
 {
-    $v = $_POST[$key] ?? '';
-    if (!is_string($v)) {
+    if (!isset($_POST[$key]) || !is_string($_POST[$key])) {
         return '';
     }
-    return $trim ? trim($v) : $v;
+    return $trim ? trim($_POST[$key]) : $_POST[$key];
+}
+
+/** Read a GET field as trimmed text ('' if missing). */
+function get_str($key)
+{
+    if (!isset($_GET[$key]) || !is_string($_GET[$key])) {
+        return '';
+    }
+    return trim($_GET[$key]);
 }
 
 /** Length in characters (not bytes); works even if the mbstring extension is missing. */
-function text_length(string $s): int
+function text_length($s)
 {
     if (function_exists('mb_strlen')) {
         return mb_strlen($s, 'UTF-8');
@@ -30,7 +40,7 @@ function text_length(string $s): int
     return (int)preg_match_all('/./us', $s);
 }
 
-function redirect(string $url)
+function redirect($url)
 {
     header('Location: ' . $url);
     exit;   // always stop the script after a redirect
@@ -38,7 +48,7 @@ function redirect(string $url)
 
 /* ---------- CSRF protection for every POST form ---------- */
 
-function csrf_token(): string
+function csrf_token()
 {
     if (empty($_SESSION['csrf'])) {
         $_SESSION['csrf'] = bin2hex(random_bytes(32));
@@ -46,14 +56,14 @@ function csrf_token(): string
     return $_SESSION['csrf'];
 }
 
-function csrf_field(): string
+function csrf_field()
 {
     return '<input type="hidden" name="csrf" value="' . e(csrf_token()) . '">';
 }
 
-function csrf_valid(): bool
+function csrf_valid()
 {
-    $sent = $_POST['csrf'] ?? '';
+    $sent = isset($_POST['csrf']) ? $_POST['csrf'] : '';
     return is_string($sent)
         && isset($_SESSION['csrf'])
         && hash_equals($_SESSION['csrf'], $sent);
@@ -61,14 +71,14 @@ function csrf_valid(): bool
 
 /* ---------- one-time messages shown after a redirect ---------- */
 
-function flash_set(string $type, string $message): void
+function flash_set($type, $message)
 {
-    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+    $_SESSION['flash'] = array('type' => $type, 'message' => $message);
 }
 
-function flash_get(): ?array
+function flash_get()
 {
-    $f = $_SESSION['flash'] ?? null;
+    $f = isset($_SESSION['flash']) ? $_SESSION['flash'] : null;
     unset($_SESSION['flash']);
     return $f;
 }
