@@ -41,7 +41,6 @@ $lang = isset($langs[$ext]) ? $langs[$ext] : 'plaintext';
 $lines = $binary ? 0 : count(split_lines($content));
 $highlight = !$binary && !$edit && $size < 300000;
 if ($highlight) {
-    $extraHead = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">';
     $extraFoot = '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>'
         . '<script>if (window.hljs) { hljs.highlightAll(); }</script>';
 }
