@@ -1,3 +1,33 @@
+// Dark / light mode toggle. The saved choice is applied before paint by a small
+// script in includes/header.php; this part handles the button clicks.
+(function () {
+  var KEY = 'minigit-theme';
+  var root = document.documentElement;
+
+  function current() { return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+
+  function sync() {
+    var isDark = current() === 'dark';
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(isDark));
+      btn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    });
+  }
+
+  function apply(theme) {
+    root.classList.add('theme-changing');          // lets the colors fade instead of snapping
+    root.setAttribute('data-theme', theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) {}
+    sync();
+    window.setTimeout(function () { root.classList.remove('theme-changing'); }, 400);
+  }
+
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+    btn.addEventListener('click', function () { apply(current() === 'dark' ? 'light' : 'dark'); });
+  });
+  sync();
+})();
+
 // Show/hide password buttons
 document.querySelectorAll('[data-reveal]').forEach(function (btn) {
   btn.addEventListener('click', function () {
